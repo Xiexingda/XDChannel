@@ -52,7 +52,7 @@
     flowLayout.minimumInteritemSpacing = Margin_X;
     
     _collectionView = [[UICollectionView alloc] initWithFrame:self.bounds collectionViewLayout:flowLayout];
-    _collectionView.showsHorizontalScrollIndicator = false;
+    _collectionView.showsHorizontalScrollIndicator = NO;
     _collectionView.backgroundColor = [UIColor clearColor];
     [_collectionView registerClass:[XDChannelItem class] forCellWithReuseIdentifier:CellID];
     [_collectionView registerClass:[XDSectionHeader class]
@@ -66,19 +66,18 @@
     _header = [[XDChannelHeader alloc]initWithFrame:CGRectMake(0, -Section_Height, self.bounds.size.width, Section_Height)];
     [_collectionView addSubview:_header];
     _header.title = @"已选频道";
-    _header.subTitle = @"点击进入频道";
     __weak typeof(self) weakSelf = self;
     [_header setEditBtnTapBlock:^(BOOL isEdit) {
-        weakSelf.model.isEdit = isEdit;
-        [weakSelf refreshCollection];
+        [weakSelf beginEdit:isEdit];
     }];
     
     UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(longPressMethod:)];
-    longPress.minimumPressDuration = 0.4f;
+    longPress.minimumPressDuration = 0.3f;
     [_collectionView addGestureRecognizer:longPress];
     
     _moveItem = [[XDChannelItem alloc] initWithFrame:CGRectMake(0, 0, Item_Width, Item_Height)];
-    _moveItem.hidden = true;
+    _moveItem.backgroundColor = [UIColor clearColor];
+    _moveItem.hidden = YES;
     [_collectionView addSubview:_moveItem];
 }
 
@@ -88,12 +87,14 @@
     CGPoint point = [gesture locationInView:_collectionView];
     switch (gesture.state) {
         case UIGestureRecognizerStateBegan:
+            gesture.minimumPressDuration = 0.1;
             [self dragBegin:point];
             break;
         case UIGestureRecognizerStateChanged:
             [self dragChanged:point];
             break;
         case UIGestureRecognizerStateEnded:
+            gesture.minimumPressDuration = 0.3;
             [self dragEnd];
             break;
         default:
@@ -103,95 +104,90 @@
 
 #pragma mark -
 #pragma mark - 相关方法
-//拖拽开始 找到被拖拽的item
+//拖拽开始
 - (void)dragBegin:(CGPoint)point{
-    [self dragingBeginHandle];
-    _dragingIndexPath = [self getDragingIndexPathWithPoint:point];
+    if (!_model.isEdit) {
+        [self beginEdit:YES];
+    }
+    _dragingIndexPath = [self getIndexWithPoint:point];
     if (!_dragingIndexPath) {return;}
+    //把移动项放到最上层
     [_collectionView bringSubviewToFront:_moveItem];
     XDChannelItem *item = (XDChannelItem*)[_collectionView cellForItemAtIndexPath:_dragingIndexPath];
     item.isMoving = YES;
-    //更新被拖拽的item
+    //更新移动项的frame
     _moveItem.frame = item.frame;
     _moveItem.title = item.title;
-    [_moveItem setTransform:CGAffineTransformMakeScale(1.1, 1.1)];
+    [_moveItem setTransform:CGAffineTransformMakeScale(1.15, 1.15)];
     _moveItem.hidden = NO;
 }
 
+//拖拽中
 - (void)dragChanged:(CGPoint)point{
     if (!_dragingIndexPath) {return;}
     _moveItem.center = point;
-    _targetIndexPath = [self getTargetIndexPathWithPoint:point];
-    //交换位置 如果没有找到targetIndexPath则不交换位置
-    if (_dragingIndexPath && _targetIndexPath) {
-        //更新数据源
-        [self refreshData];
-        //更新item位置
-        [_collectionView moveItemAtIndexPath:_dragingIndexPath toIndexPath:_targetIndexPath];
-        _dragingIndexPath = _targetIndexPath;
+    _targetIndexPath = [self getIndexWithPoint:point];
+    //如果有目标位置，并且目标位置与当前位置不同则交换位置
+    if (_targetIndexPath && _dragingIndexPath.row != _targetIndexPath.row) {
+        [self dragingChangedHandle];
     }
 }
 
+//拖拽结束
 - (void)dragEnd{
     if (!_dragingIndexPath) {return;}
     CGRect endFrame = [_collectionView cellForItemAtIndexPath:_dragingIndexPath].frame;
-    [_moveItem setTransform: CGAffineTransformIdentity];
+    
     [UIView animateWithDuration:0.4 animations:^{
+        self.moveItem.transform = CGAffineTransformIdentity;
         self.moveItem.frame = endFrame;
+        
     }completion:^(BOOL finished) {
-        self.moveItem.hidden = true;
+        self.moveItem.hidden = YES;
         XDChannelItem *item = (XDChannelItem*)[self.collectionView cellForItemAtIndexPath:self.dragingIndexPath];
-        item.isMoving = false;
+        item.isMoving = NO;
     }];
 }
 
-//获取被拖动IndexPath的方法
-- (NSIndexPath*)getDragingIndexPathWithPoint:(CGPoint)point{
-    NSIndexPath* dragIndexPath = nil;
-    //最后剩一个怎不可以排序
-    if ([_collectionView numberOfItemsInSection:0] == 1) {return dragIndexPath;}
-    for (NSIndexPath *indexPath in _collectionView.indexPathsForVisibleItems) {
-        //下半部分不需要排序
-        if (indexPath.section > 0) {continue;}
-        //在上半部分中找出相对应的Item
-        if (CGRectContainsPoint([_collectionView cellForItemAtIndexPath:indexPath].frame, point)) {
-            if (indexPath.row != _model.staticIndex) {
-                dragIndexPath = indexPath;
-            }
-            break;
-        }
+//通过手势点找到对对应的item索引
+- (NSIndexPath *)getIndexWithPoint:(CGPoint)point {
+    __weak typeof(self) weakSelf = self;
+    __block NSIndexPath *pointIndex = nil;
+    
+    //只有一个元素时无法拖拽
+    if ([_collectionView numberOfItemsInSection:0] == 1) {
+        return pointIndex;
     }
-    return dragIndexPath;
-}
-
-//获取目标IndexPath的方法
-- (NSIndexPath*)getTargetIndexPathWithPoint:(CGPoint)point {
-    NSIndexPath *targetIndexPath = nil;
-    for (NSIndexPath *indexPath in _collectionView.indexPathsForVisibleItems) {
-        if ([indexPath isEqual:_dragingIndexPath]) {continue;}
-        if (indexPath.section > 0) {continue;}
-        //在第一组中找出将被替换位置的Item
-        if (CGRectContainsPoint([_collectionView cellForItemAtIndexPath:indexPath].frame, point)) {
-            if (indexPath.row != _model.staticIndex) {
-                targetIndexPath = indexPath;
+    
+    [_collectionView.indexPathsForVisibleItems enumerateObjectsUsingBlock:^(NSIndexPath * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        //只有第一组可以移动，所以只找点在第一组中对应的index
+        if (obj.section == 0) {
+            //如果对应的item包含了这个点，并且这个item不是固定项
+            if (CGRectContainsPoint([weakSelf.collectionView cellForItemAtIndexPath:obj].frame, point) && obj.row != weakSelf.model.staticIndex) {
+                pointIndex = obj;
+                *stop = YES;
             }
         }
-    }
-    return targetIndexPath;
+    }];
+    return pointIndex;
 }
 
-//拖拽排序后需要重新排序数据源
-- (void)refreshData {
+//拖拽交换位置后的处理
+- (void)dragingChangedHandle {
     id obj = [_model.inUseTitles objectAtIndex:_dragingIndexPath.row];
+    _model.currentItem = obj;
     [_model.inUseTitles removeObject:obj];
     [_model.inUseTitles insertObject:obj atIndex:_targetIndexPath.row];
-    _model.currentItem = obj;
+    [_collectionView moveItemAtIndexPath:_dragingIndexPath toIndexPath:_targetIndexPath];
+    _dragingIndexPath = _targetIndexPath;
+    
     [self changedBackBlock];
 }
 
-- (void)dragingBeginHandle {
-    _model.isEdit = YES;
-    _header.isEdit = YES;
+//开始编辑
+- (void)beginEdit:(BOOL)beginEdit {
+    _header.isEdit = beginEdit;
+    _model.isEdit = beginEdit;
     [self refreshCollection];
 }
 
@@ -209,13 +205,23 @@
     }
 }
 
+//刷新collectionview
+- (void)refreshCollection {
+    NSMutableIndexSet *indexset = [[NSMutableIndexSet alloc]init];
+    [indexset addIndex:0];
+    [indexset addIndex:1];
+    [indexset addIndex:2];
+    [self.collectionView reloadSections:indexset];
+    [self.collectionView reloadItemsAtIndexPaths:[self.collectionView indexPathsForVisibleItems]];
+}
+
 #pragma mark -
 #pragma mark CollectionViewDelegate&DataSource
--(NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     return section == 0 ? _model.inUseTitles.count : section == 1 ? _model.cancelTitles.count : _model.unUseTitles.count;
 }
 
--(NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
     return 3;
 }
 
@@ -239,7 +245,7 @@
         
     } else if (indexPath.section == 1) {
         header.title = @"最近删除";
-        header.subTitle = @"点击添加更多";
+        header.subTitle = @"";
         header.hidden = _model.cancelTitles.count > 0 ? NO : YES;
         
     } else if (indexPath.section == 2) {
@@ -278,17 +284,17 @@
             return;
         }
         
-        //只剩一个的时候不可删除
-        if ([_collectionView numberOfItemsInSection:0] == 1) {return;}
-        //第一个不可删除
+        //固定项不可删除
         if (indexPath.row  == _model.staticIndex) {return;}
         id obj = [_model.inUseTitles objectAtIndex:indexPath.row];
         [_model.inUseTitles removeObject:obj];
         [_model.cancelTitles insertObject:obj atIndex:0];
         [_collectionView moveItemAtIndexPath:indexPath toIndexPath:[NSIndexPath indexPathForRow:0 inSection:1]];
+        
         //处理当前项，如果当前位置还有item，则直接用该item做为当前项，如果没有，则向前一位
-        if (_model.inUseTitles.count - 1 >= indexPath.row) {
+        if (_model.inUseTitles.count > 0 && _model.inUseTitles.count - 1 >= indexPath.row) {
             _model.currentItem = _model.inUseTitles[indexPath.row];
+            
         } else {
             _model.currentItem = _model.inUseTitles.lastObject;
         }
@@ -314,12 +320,4 @@
     [self refreshCollection];
 }
 
-- (void)refreshCollection {
-    NSMutableIndexSet *indexset = [[NSMutableIndexSet alloc]init];
-    [indexset addIndex:0];
-    [indexset addIndex:1];
-    [indexset addIndex:2];
-    [self.collectionView reloadSections:indexset];
-    [self.collectionView reloadItemsAtIndexPaths:[self.collectionView indexPathsForVisibleItems]];
-}
 @end

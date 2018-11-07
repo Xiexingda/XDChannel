@@ -34,6 +34,7 @@
     _secondTitleLabel = [[UILabel alloc] initWithFrame:CGRectMake(CGRectGetMaxX(_titleLabel.frame), 20, self.bounds.size.width-marginX*2-labelWidth-70, self.bounds.size.height-20)];
     _secondTitleLabel.textColor = [UIColor lightGrayColor];
     _secondTitleLabel.font = [UIFont systemFontOfSize:13.0f];
+    _secondTitleLabel.text = @"点击进入频道";
     [self addSubview:_secondTitleLabel];
     
     _editBtn = [[UIButton alloc]init];
@@ -53,9 +54,8 @@
 }
 
 - (void)editTapMethord:(UIButton *)btn {
-    self.isEdit = !btn.selected;
     if (self.editBtnTapBlock) {
-        self.editBtnTapBlock(self.isEdit);
+        self.editBtnTapBlock(!btn.selected);
     }
 }
 
@@ -66,14 +66,9 @@
     _titleLabel.text = title;
 }
 
-- (void)setSubTitle:(NSString *)subTitle {
-    _subTitle = subTitle;
-    _secondTitleLabel.text = subTitle;
-}
-
 - (void)setIsEdit:(BOOL)isEdit {
     _isEdit = isEdit;
-    _secondTitleLabel.text = isEdit ? @"按住拖动调整排序" : @"点击进入频道";
+    _secondTitleLabel.text = isEdit ? @"长按拖动调整排序" : @"点击进入频道";
     _editBtn.selected = isEdit;
 }
 @end

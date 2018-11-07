@@ -13,10 +13,11 @@
 
  @param inUseTitles 可用标题组
  @param unUseTitles 不可用标题组
- @param endIndex 最终返回索引
+ @param currentItem 执行完后的当前项
+ @param currentItemIndex 执行完后的当前项索引
  @param isInUseTitlesChanged 可用数组是否有变化
  */
-typedef void(^finishBlock)(NSArray *inUseTitles, NSArray *unUseTitles, NSInteger endIndex, BOOL isInUseTitlesChanged);
+typedef void(^finishBlock)(NSArray *inUseTitles, NSArray *unUseTitles, NSString *currentItem, NSInteger currentItemIndex, BOOL isInUseTitlesChanged);
 @interface XDChannel : UIView
 /**
  显示频道页

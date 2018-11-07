@@ -87,7 +87,7 @@
     }];
     
     if (self.privateFinishBlock) {
-        self.privateFinishBlock(self.model.inUseTitles, [self.model allUnUseTitles], [self.model theEndIndexHandle], [self.model isInUseTitlesChanged]);
+        self.privateFinishBlock(self.model.inUseTitles, [self.model allUnUseTitles], [self.model theEndCurrentItem], [self.model theEndCurrentItemIndex], [self.model isInUseTitlesChanged]);
     }
 }
 @end

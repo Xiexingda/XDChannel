@@ -12,7 +12,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface XDChannelHeader : UIView
 @property (nonatomic, strong) NSString *title;
-@property (nonatomic, strong) NSString *subTitle;
 @property (nonatomic, assign) BOOL isEdit;
 @property (nonatomic,   copy) void(^editBtnTapBlock)(BOOL isEdit);
 @end

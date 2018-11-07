@@ -38,10 +38,21 @@
 
 - (void)btnTap {
     __weak typeof(self) weakSelf = self;
-    [XDChannel showChannelWithInUseTitles:_inUseTitles unUseTitles:_unUseTitles currentItem:_currentItem isFirstFixed:YES finish:^(NSArray * _Nonnull inUseTitles, NSArray * _Nonnull unUseTitles, NSInteger endIndex, BOOL isInUseTitlesChanged) {
-        weakSelf.inUseTitles = inUseTitles;
-        weakSelf.unUseTitles = unUseTitles;
-        weakSelf.currentItem = inUseTitles[endIndex];
-    }];
+    [XDChannel showChannelWithInUseTitles:_inUseTitles
+                              unUseTitles:_unUseTitles
+                              currentItem:_currentItem
+                             isFirstFixed:YES
+                                   finish:^(NSArray *inUseTitles,
+                                            NSArray *unUseTitles,
+                                            NSString *currentItem,
+                                            NSInteger currentItemIndex,
+                                            BOOL isInUseTitlesChanged) {
+        
+                                       weakSelf.inUseTitles = inUseTitles;
+                                       weakSelf.unUseTitles = unUseTitles;
+                                       weakSelf.currentItem = currentItem;
+                                       
+                                       NSLog(@"%@-%ld-%d",currentItem, (long)currentItemIndex, isInUseTitlesChanged);
+                                   }];
 }
 @end
