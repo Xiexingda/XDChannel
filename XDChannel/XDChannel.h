@@ -18,9 +18,11 @@
  @param isInUseTitlesChanged 可用数组是否有变化
  */
 typedef void(^finishBlock)(NSArray *inUseTitles, NSArray *unUseTitles, NSString *currentItem, NSInteger currentItemIndex, BOOL isInUseTitlesChanged);
+
 @interface XDChannel : UIView
+
 /**
- 显示频道页
+ 显示频道页(注意*inUseTitles和unUseTitles中不能有重复项)
 
  @param inUseTitles 可选项
  @param unUseTitles 不可选项
@@ -28,10 +30,6 @@ typedef void(^finishBlock)(NSArray *inUseTitles, NSArray *unUseTitles, NSString 
  @param isFirstFixed 是否固定首项
  @param block 回调
  */
-+ (void)showChannelWithInUseTitles:(NSArray *)inUseTitles
-                       unUseTitles:(NSArray *)unUseTitles
-                       currentItem:(NSString *)currentItem
-                      isFirstFixed:(BOOL)isFirstFixed
-                            finish:(finishBlock)block;
++ (void)showChannelWithInUseTitles:(NSArray *)inUseTitles unUseTitles:(NSArray *)unUseTitles currentItem:(NSString *)currentItem isFirstFixed:(BOOL)isFirstFixed finish:(finishBlock)block;
 @end
 

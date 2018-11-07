@@ -22,6 +22,7 @@
 		8EFA53DA2191B4C30042D80C /* XDChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EFA53CF2191B4C30042D80C /* XDChannel.m */; };
 		8EFA53DB2191B4C30042D80C /* XDChannelHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EFA53D12191B4C30042D80C /* XDChannelHeader.m */; };
 		8EFA53DD2191B5270042D80C /* XDChannelResource.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 8EFA53DC2191B5270042D80C /* XDChannelResource.bundle */; };
+		8EFA53E521928B880042D80C /* NSArray+XDChannel.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EFA53E421928B880042D80C /* NSArray+XDChannel.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,6 +72,8 @@
 		8EFA53D42191B4C30042D80C /* XDSectionHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XDSectionHeader.h; sourceTree = "<group>"; };
 		8EFA53D52191B4C30042D80C /* XDChannel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XDChannel.h; sourceTree = "<group>"; };
 		8EFA53DC2191B5270042D80C /* XDChannelResource.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = XDChannelResource.bundle; sourceTree = "<group>"; };
+		8EFA53E321928B880042D80C /* NSArray+XDChannel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSArray+XDChannel.h"; sourceTree = "<group>"; };
+		8EFA53E421928B880042D80C /* NSArray+XDChannel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSArray+XDChannel.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -168,6 +171,8 @@
 				8EFA53CE2191B4C30042D80C /* XDSectionHeader.m */,
 				8EFA53D32191B4C30042D80C /* XDChannelModel.h */,
 				8EFA53CC2191B4C30042D80C /* XDChannelModel.m */,
+				8EFA53E321928B880042D80C /* NSArray+XDChannel.h */,
+				8EFA53E421928B880042D80C /* NSArray+XDChannel.m */,
 				8EFA53DC2191B5270042D80C /* XDChannelResource.bundle */,
 			);
 			path = XDChannel;
@@ -304,6 +309,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8EFA53E521928B880042D80C /* NSArray+XDChannel.m in Sources */,
 				8EFA539C2191B42E0042D80C /* ViewController.m in Sources */,
 				8EFA53A72191B4300042D80C /* main.m in Sources */,
 				8EFA53D82191B4C30042D80C /* XDChannelItem.m in Sources */,

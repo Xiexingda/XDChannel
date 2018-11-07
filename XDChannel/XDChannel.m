@@ -9,6 +9,7 @@
 #import "XDChannel.h"
 #import "XDChannelModel.h"
 #import "XDChannelView.h"
+#import "NSArray+XDChannel.h"
 
 @interface XDChannel()
 @property (nonatomic, strong) UINavigationController *naVC;
@@ -29,6 +30,7 @@
 - (instancetype)initChannelViewWithInUseTitles:(NSArray *)inUseTitles unUseTitles:(NSArray *)unUseTitles currentItem:(NSString *)currentItem isFirstFixed:(BOOL)isFirstFixed finish:(finishBlock)block {
     self = [super initWithFrame:[UIScreen mainScreen].bounds];
     if (self) {
+        [self checkInUseTitles:inUseTitles unUseTitles:unUseTitles];
         self.model = [[XDChannelModel alloc]init];
         self.model.originalInUseTitles = inUseTitles;
         self.model.originalItem = currentItem;
@@ -88,6 +90,17 @@
     
     if (self.privateFinishBlock) {
         self.privateFinishBlock(self.model.inUseTitles, [self.model allUnUseTitles], [self.model theEndCurrentItem], [self.model theEndCurrentItemIndex], [self.model isInUseTitlesChanged]);
+    }
+}
+
+//数组检测
+- (void)checkInUseTitles:(NSArray *)inUseTitles unUseTitles:(NSArray *)unUseTitles {
+    NSMutableArray *allTitles = [NSMutableArray arrayWithArray:inUseTitles];
+    [allTitles addObjectsFromArray:unUseTitles];
+    
+    if ([[allTitles hasRepeatItemInArray] length] > 0) {
+        NSLog(@"XDChannel_出现重复标题：%@", [allTitles hasRepeatItemInArray]);
+        __assert(0, "XDChannel_标题重复", __LINE__);
     }
 }
 @end
